@@ -19,9 +19,9 @@ namespace Catalogo.Controllers
             this.repository = _repository;
         }
         [HttpGet("{id}")]
-        public ActionResult<ItemDto> GetItem(Guid id)
+        public async Task<ActionResult<ItemDto>> GetItemAsyn(Guid id)
         {
-            var item = repository.GetItemAsync(id);
+            var item = await repository.GetItemAsync(id);
             if (item is null)
             {
                 return NotFound();
@@ -29,13 +29,14 @@ namespace Catalogo.Controllers
             return item.AsDto();
         }
         [HttpGet]
-        public IEnumerable<ItemDto> GetItems()
+        public async Task<IEnumerable<ItemDto>> GetItemsAsync()
         {
-            var items = repository.GetItems().Select(item => item.AsDto());
+            var items = (await repository.GetItemsAsync())
+                .Select(item => item.AsDto());
             return items;
         }
         [HttpPost]
-        public ActionResult<ItemDto> Create(CreateItemDto itemDto)
+        public async Task<ActionResult<ItemDto>> CreateAsync(CreateItemDto itemDto)
         {
             Item item = new()
             {
@@ -44,14 +45,14 @@ namespace Catalogo.Controllers
                 Age = itemDto.Age,
                 DateTimeCreate = DateTime.Now.ToString()
             };
-            repository.CreateItem(item);
-            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item.AsDto());
+            await repository.CreateItemAsync(item);
+            return CreatedAtAction(nameof(GetItemAsyn), new { id = item.Id }, item.AsDto());
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateItem(Guid id, UpdateItemDto itemDto)
+        public async Task<ActionResult> UpdateItemAsync(Guid id, UpdateItemDto itemDto)
         {
-            var existingItem = repository.GetItemAsync(id);
+            var existingItem = await repository.GetItemAsync(id);
             if (existingItem is null)
             {
                 return NotFound();
@@ -62,19 +63,19 @@ namespace Catalogo.Controllers
                 Age = itemDto.Age
             };
 
-            repository.UpdateItem(UpdatedItem);
+            await repository.UpdateItemAsync(UpdatedItem);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public ActionResult UpdateItem(Guid id)
+        public async Task<ActionResult> UpdateItem(Guid id)
         {
-            var existingItem = repository.GetItemAsync(id);
+            var existingItem = await repository.GetItemAsync(id);
             if (existingItem is null)
             {
                 return NotFound();
             }
-            repository.DeleteItem(id);
+            await repository.DeleteItemAsync(id);
             return NoContent();
         }
     }

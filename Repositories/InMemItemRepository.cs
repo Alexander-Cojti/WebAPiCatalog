@@ -16,29 +16,33 @@ namespace Catalogo.Repositories
             new Item { Id = Guid.NewGuid(), Name = "Juan", Age = 11 },
             new Item { Id = Guid.NewGuid(), Name = "Nat", Age = 15 }
         };
-        public IEnumerable<Item> GetItems()
+        public async Task<IEnumerable<Item>> GetItemsAsync()
         {
-            return Items;
+            return await Task.FromResult(Items);
         }
-        public Item GetItemAsync(Guid id)
+        public async Task<Item> GetItemAsync(Guid id)
         {
-            return Items.Where(item => item.Id == id).SingleOrDefault();
+            var item = Items.Where(item => item.Id == id).SingleOrDefault();
+            return await Task.FromResult(item);
         }
 
-        public void CreateItem(Item item)
+        public async Task CreateItemAsync(Item item)
         {
             Items.Add(item);
+            await Task.CompletedTask;
         }
-        public void UpdateItem(Item item)
+        public async Task UpdateItemAsync(Item item)
         {
             var index = Items.FindIndex(existinItem => existinItem.Id == item.Id);
             Items[index] = item;
+            await Task.CompletedTask;
         }
 
-        public void DeleteItem(Guid id)
+        public async Task DeleteItemAsync(Guid id)
         {
             var index = Items.FindIndex(existinItem => existinItem.Id == id);
             Items.RemoveAt(index);
+            await Task.CompletedTask;
         }
     }
 }
