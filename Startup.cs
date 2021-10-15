@@ -2,7 +2,9 @@ using Catalogo.Controllers;
 using Catalogo.Repositories;
 using Catalogo.Settings;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +19,8 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Catalogo
@@ -35,10 +39,10 @@ namespace Catalogo
         {
             BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
             BsonSerializer.RegisterSerializer(new DateTimeSerializer(BsonType.String));
+            var mongoDbsettings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
             services.AddSingleton<IMongoClient>(serviceProvider =>
             {
-                var settings = Configuration.GetSection(nameof(MongoDbSettings)).Get<MongoDbSettings>();
-                return new MongoClient(settings.ConnectionString);
+                return new MongoClient(mongoDbsettings.ConnectionString);
             });
 
             //services.AddSingleton<IItemsRepository, InMemItemRepository>();
@@ -49,7 +53,7 @@ namespace Catalogo
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Catalogo", Version = "v1" });
             });
-            services.AddHealthChecks();
+            services.AddHealthChecks().AddMongoDb(mongoDbsettings.ConnectionString, name: "mongodb", timeout: TimeSpan.FromSeconds(3), tags: new[] { "ready" });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,18 +65,41 @@ namespace Catalogo
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalogo v1"));
             }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHealthChecks("/healt");
+                //endpoints.MapHealthChecks("/healt");
+                endpoints.MapHealthChecks("/healt/ready", new HealthCheckOptions
+                {
+                    Predicate = (ckeck) => ckeck.Tags.Contains("ready"),
+                    ResponseWriter = async (context, report) =>
+                     {
+                         var result = JsonSerializer.Serialize(new
+                         {
+                             status = report.Status.ToString(),
+                             checks = report.Entries.Select(entry => new
+                             {
+                                 name = entry.Key,
+                                 status = entry.Value.Status.ToString(),
+                                 exception = (entry.Value.Exception != null) ? entry.Value.Exception.Message : "none",
+                                 duration = entry.Value.Duration.ToString()
+                             })
+                         }
+                         );
+                         context.Response.ContentType = MediaTypeNames.Application.Json;
+                         await context.Response.WriteAsync(result);
+                     }
+                });
+                endpoints.MapHealthChecks("/healt/live", new HealthCheckOptions
+                {
+                    Predicate = (_) => false
+                }); ;
             });
         }
+
+
     }
 }
