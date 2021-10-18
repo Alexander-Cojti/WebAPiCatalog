@@ -2,6 +2,7 @@
 using Catalogo.Entities;
 using Catalogo.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,26 @@ namespace Catalogo.Controllers
     public class ItemsController : Controller
     {
         public readonly IItemsRepository repository;
-        public ItemsController(IItemsRepository _repository)
+        private readonly ILogger<ItemsController> logger;
+
+        public ItemsController(IItemsRepository _repository, ILogger<ItemsController> _logger)
         {
             this.repository = _repository;
+            this.logger = _logger;
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<ItemDto>> GetItemAsyn(Guid id)
         {
-            var item = await repository.GetItemAsync(id);
+            Item item = null;
+            try
+            {
+                logger.LogInformation("Inicio de búsqueda de item");
+                item = await repository.GetItemAsync(id);
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e.Message);
+            }
             if (item is null)
             {
                 return NotFound();

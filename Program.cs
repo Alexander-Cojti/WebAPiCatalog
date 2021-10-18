@@ -18,6 +18,14 @@ namespace Catalogo
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+            //.ConfigureLogging((context, loggin) =>
+            //{
+            //    loggin.ClearProviders();
+            //    loggin.AddConfiguration(context.Configuration.GetSection("Logging"));
+            //    //loggin.AddDebug();
+            //    loggin.AddConsole();
+            //}
+            //    )
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
