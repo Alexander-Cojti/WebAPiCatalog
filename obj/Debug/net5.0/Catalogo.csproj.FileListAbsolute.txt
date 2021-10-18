@@ -38,6 +38,3 @@ C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\runtimes\win\nati
 C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\runtimes\linux\native\libmongocrypt.so
 C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\runtimes\osx\native\libmongocrypt.dylib
 C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\runtimes\win\native\mongocrypt.dll
-C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\HealthChecks.MongoDb.dll
-C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\Microsoft.Extensions.Diagnostics.HealthChecks.dll
-C:\RED\BACKEND\SERVICES\TEST\NETCORE\Catalogo\bin\Debug\net5.0\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
